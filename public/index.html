@@ -1,60 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>MC Bot Controller</title>
+    <title>MC Bot Control</title>
     <style>
-        body { font-family: sans-serif; background: #222; color: white; padding: 20px; }
-        .panel { background: #333; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
-        input { padding: 8px; margin: 5px; border-radius: 4px; border: none; }
-        button { padding: 8px 15px; cursor: pointer; border-radius: 4px; border: none; background: #28a745; color: white; }
-        #log { background: #000; height: 200px; overflow-y: scroll; padding: 10px; font-family: monospace; border: 1px solid #555; }
-        .stop { background: #dc3545; }
+        body { font-family: sans-serif; background: #1a1a1a; color: white; padding: 20px; }
+        .panel { background: #333; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        input { padding: 10px; margin: 5px; border-radius: 5px; border: none; width: 40%; }
+        button { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
+        .start { background: #28a745; color: white; }
+        .stop { background: #dc3545; color: white; margin-left: 10px; }
+        #log { background: #000; height: 200px; overflow-y: scroll; padding: 10px; font-family: monospace; color: #0f0; margin-top: 10px; border: 1px solid #444; }
     </style>
 </head>
 <body>
-    <h2>Mineflayer Bot GUI</h2>
-    
     <div class="panel">
-        <input id="host" placeholder="IP Server (e.g. localhost)">
+        <h2>Slimefun Bot Controller</h2>
+        <input id="host" placeholder="Server IP">
         <input id="port" placeholder="Port" value="25565">
-        <input id="user" placeholder="Username Bot">
-        <input id="pass" type="password" placeholder="Password (Optional)">
-        <br>
-        <button onclick="startBot()">START BOT</button>
+        <input id="user" placeholder="Bot Username">
+        <input id="pass" type="password" placeholder="Password">
+        <br><br>
+        <label><input type="checkbox" id="autoChat" checked> Enable Slimefun Auto-Chat</label>
+        <br><br>
+        <button class="start" onclick="startBot()">START BOT</button>
         <button class="stop" onclick="stopBot()">STOP BOT</button>
     </div>
 
     <div class="panel">
         <div id="log"></div>
-        <input id="msg" placeholder="Ketik pesan chat..." style="width: 70%;">
-        <button onclick="sendChat()">Kirim</button>
+        <div style="margin-top: 10px;">
+            <input id="msg" placeholder="Type a message..." style="width: 70%;">
+            <button onclick="sendChat()">Send</button>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        const logDiv = document.getElementById('log');
-
         function startBot() {
-            const data = {
+            socket.emit('start-bot', {
                 host: document.getElementById('host').value,
                 port: document.getElementById('port').value,
                 username: document.getElementById('user').value,
-                pass: document.getElementById('pass').value
-            };
-            socket.emit('start-bot', data);
+                pass: document.getElementById('pass').value,
+                autoChat: document.getElementById('autoChat').checked
+            });
         }
-
         function stopBot() { socket.emit('stop-bot'); }
         function sendChat() {
             const msg = document.getElementById('msg').value;
             socket.emit('send-chat', msg);
             document.getElementById('msg').value = '';
         }
-
         socket.on('status', (msg) => {
-            logDiv.innerHTML += `<div>[System] ${msg}</div>`;
-            logDiv.scrollTop = logDiv.scrollHeight;
+            const log = document.getElementById('log');
+            log.innerHTML += `<div>${msg}</div>`;
+            log.scrollTop = log.scrollHeight;
         });
     </script>
 </body>
