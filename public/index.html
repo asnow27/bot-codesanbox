@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MC Bot Controller</title>
+    <style>
+        body { font-family: sans-serif; background: #222; color: white; padding: 20px; }
+        .panel { background: #333; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+        input { padding: 8px; margin: 5px; border-radius: 4px; border: none; }
+        button { padding: 8px 15px; cursor: pointer; border-radius: 4px; border: none; background: #28a745; color: white; }
+        #log { background: #000; height: 200px; overflow-y: scroll; padding: 10px; font-family: monospace; border: 1px solid #555; }
+        .stop { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <h2>Mineflayer Bot GUI</h2>
+    
+    <div class="panel">
+        <input id="host" placeholder="IP Server (e.g. localhost)">
+        <input id="port" placeholder="Port" value="25565">
+        <input id="user" placeholder="Username Bot">
+        <input id="pass" type="password" placeholder="Password (Optional)">
+        <br>
+        <button onclick="startBot()">START BOT</button>
+        <button class="stop" onclick="stopBot()">STOP BOT</button>
+    </div>
+
+    <div class="panel">
+        <div id="log"></div>
+        <input id="msg" placeholder="Ketik pesan chat..." style="width: 70%;">
+        <button onclick="sendChat()">Kirim</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const logDiv = document.getElementById('log');
+
+        function startBot() {
+            const data = {
+                host: document.getElementById('host').value,
+                port: document.getElementById('port').value,
+                username: document.getElementById('user').value,
+                pass: document.getElementById('pass').value
+            };
+            socket.emit('start-bot', data);
+        }
+
+        function stopBot() { socket.emit('stop-bot'); }
+        function sendChat() {
+            const msg = document.getElementById('msg').value;
+            socket.emit('send-chat', msg);
+            document.getElementById('msg').value = '';
+        }
+
+        socket.on('status', (msg) => {
+            logDiv.innerHTML += `<div>[System] ${msg}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        });
+    </script>
+</body>
+</html>
